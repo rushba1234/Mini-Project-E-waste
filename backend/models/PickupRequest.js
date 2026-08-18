@@ -2,13 +2,26 @@ const mongoose = require('mongoose');
 
 const PickupRequestSchema = new mongoose.Schema({
   user: { type: String, required: true }, // Store User ID
-  userName: { type: String, required: true }, // Denormalized for display convenience
-  category: { type: String, required: true }, // e.g. 'Computers', 'Mobile Phones', 'Batteries', etc.
+  userName: { type: String, required: true },
+  userPhone: { type: String, default: '' },
+  category: { type: String, required: true }, // e.g. 'Mobile Phones', 'Laptops', 'Batteries', 'Televisions', etc.
   description: { type: String },
   weight: { type: Number, required: true }, // in kg
   address: { type: String, required: true },
   pickupDate: { type: Date, required: true },
-  status: { type: String, enum: ['pending', 'scheduled', 'collected', 'recycled'], default: 'pending' },
+  status: { 
+    type: String, 
+    enum: ['pending', 'verified', 'assigned', 'collected', 'warehouse', 'recycled', 'scheduled'], 
+    default: 'pending' 
+  },
+  assignedStaff: { type: String, default: null }, // Staff User ID
+  assignedStaffName: { type: String, default: '' },
+  warehouseBatchId: { type: String, default: null },
+  feedback: {
+    rating: { type: Number, default: 0 },
+    comment: { type: String, default: '' },
+    date: { type: Date }
+  },
   pointsAwarded: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
 });

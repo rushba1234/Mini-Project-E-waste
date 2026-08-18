@@ -26,6 +26,8 @@ const Login = ({ setUser }) => {
 
       if (res.data.user.role === 'admin') {
         navigate('/admin');
+      } else if (res.data.user.role === 'staff') {
+        navigate('/staff');
       } else {
         navigate('/dashboard');
       }
@@ -34,6 +36,10 @@ const Login = ({ setUser }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const setDemoCredentials = (email, password) => {
+    setFormData({ email, password });
   };
 
   return (
@@ -45,9 +51,11 @@ const Login = ({ setUser }) => {
           </button>
         </div>
         <GlassCard>
-          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Welcome Back</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Sign in to manage your e-waste pickups</p>
+          <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+            <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Portal Sign In</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+              Access User, Staff, or Admin console
+            </p>
           </div>
 
           {error && (
@@ -63,6 +71,38 @@ const Login = ({ setUser }) => {
               {error}
             </div>
           )}
+
+          {/* Quick Demo Login Credentials Buttons */}
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.03)',
+            border: '1px solid var(--border-glass)',
+            padding: '0.75rem',
+            borderRadius: '10px',
+            marginBottom: '1.5rem',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginBottom: '0.5rem' }}>
+              ⚡ Quick Demo Credentials:
+            </div>
+            <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}
+                onClick={() => setDemoCredentials('admin@ewaste.com', 'admin123')}
+              >
+                Admin Login
+              </button>
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem', color: '#fbbf24' }}
+                onClick={() => setDemoCredentials('staff@ewaste.com', 'staff123')}
+              >
+                Staff Login
+              </button>
+            </div>
+          </div>
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
@@ -99,7 +139,7 @@ const Login = ({ setUser }) => {
           <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
             Don't have an account?{' '}
             <Link to="/register" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: '600' }}>
-              Create one
+              Create User Account
             </Link>
           </div>
         </GlassCard>

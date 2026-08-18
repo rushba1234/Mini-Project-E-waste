@@ -8,6 +8,7 @@ const { connectDB } = require('./config/db');
 const User = require('./models/User');
 const Center = require('./models/Center');
 const PickupRequest = require('./models/PickupRequest');
+const Warehouse = require('./models/Warehouse');
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/pickups', require('./routes/pickups'));
 app.use('/api/centers', require('./routes/centers'));
+app.use('/api/warehouse', require('./routes/warehouse'));
 
 // Live Global Statistics Endpoint
 app.get('/api/stats', async (req, res) => {
@@ -36,7 +38,7 @@ app.get('/api/stats', async (req, res) => {
       .reduce((acc, r) => acc + (r.pointsAwarded || 0), 0);
 
     const completedPickups = allRequests
-      .filter(r => r.status === 'collected' || r.status === 'recycled').length;
+      .filter(r => r.status === 'collected' || r.status === 'warehouse' || r.status === 'recycled').length;
 
     res.json({
       totalWeightRecycled,
@@ -53,10 +55,10 @@ app.get('/api/stats', async (req, res) => {
 
 // Root Endpoint
 app.get('/', (req, res) => {
-  res.json({ message: 'E-Waste Collection API is running in production mode...', databaseMode: global.dbMode });
+  res.json({ message: 'E-Waste Collection API is running...', databaseMode: global.dbMode });
 });
 
-// Seed Initial Setup (Centers and Initial Admin only)
+// Seed Initial Setup (Centers, Admin, and Staff)
 async function seedInitialSetup() {
   try {
     // Seed Collection Centers if none exist
@@ -101,9 +103,26 @@ async function seedInitialSetup() {
         email: 'admin@ewaste.com',
         password: hashedPassword,
         role: 'admin',
+        phone: '+91 98765 00000',
         ecoPoints: 0
       });
       console.log('System Admin account created (admin@ewaste.com / admin123)');
+    }
+
+    // Seed default staff account if no staff exists
+    const staffUser = await User.findOne({ role: 'staff' });
+    if (!staffUser) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash('staff123', salt);
+      await User.create({
+        name: 'Alex Staff',
+        email: 'staff@ewaste.com',
+        password: hashedPassword,
+        role: 'staff',
+        phone: '+91 98765 99999',
+        ecoPoints: 0
+      });
+      console.log('Default Staff account created (staff@ewaste.com / staff123)');
     }
   } catch (err) {
     console.error('Error during initial setup:', err.message);

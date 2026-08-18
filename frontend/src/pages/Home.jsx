@@ -23,11 +23,18 @@ const Home = ({ user }) => {
     fetchStats();
   }, []);
 
+  const getDashboardLink = () => {
+    if (!user) return '/register';
+    if (user.role === 'admin') return '/admin';
+    if (user.role === 'staff') return '/staff';
+    return '/dashboard';
+  };
+
   return (
     <div className="animate-fade-in" style={{ padding: '3rem 0 5rem' }}>
       <div className="container">
         {/* Hero Section */}
-        <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 4rem' }}>
+        <div style={{ textAlign: 'center', maxWidth: '850px', margin: '0 auto 4rem' }}>
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -41,44 +48,44 @@ const Home = ({ user }) => {
             fontWeight: '600',
             marginBottom: '1.5rem'
           }}>
-            🌱 Sustainable Future Starts Here
+            🌱 E-Waste Collection & Recycling Management Portal
           </div>
 
-          <h1 style={{ fontSize: '3.5rem', fontWeight: '800', lineHeight: 1.15, marginBottom: '1.5rem' }}>
-            Dispose E-Waste Responsibly, <br />
-            <span className="gradient-text">Earn Eco Rewards</span>
+          <h1 style={{ fontSize: '3.2rem', fontWeight: '800', lineHeight: 1.15, marginBottom: '1.5rem' }}>
+            Safe Collection & Disposal of <br />
+            <span className="gradient-text">Electronic Waste</span>
           </h1>
 
           <p style={{ fontSize: '1.15rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '2.5rem' }}>
-            Turn your old electronics into environmental impact. Schedule easy doorstep pickup, 
-            ensure certified safe recycling, and get rewarded with Eco Points!
+            Request doorstep pickup of unwanted mobile phones, laptops, batteries, chargers, televisions, and other electronics. 
+            Connecting Citizens, Collection Staff, and Authorized Recycling Centres.
           </p>
 
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             {user ? (
-              <Link to={user.role === 'admin' ? '/admin' : '/dashboard'} className="btn-primary" style={{ padding: '0.9rem 2rem', fontSize: '1.05rem' }}>
-                Go to Dashboard →
+              <Link to={getDashboardLink()} className="btn-primary" style={{ padding: '0.9rem 2rem', fontSize: '1.05rem' }}>
+                Go to Portal Console →
               </Link>
             ) : (
               <>
                 <Link to="/register" className="btn-primary" style={{ padding: '0.9rem 2rem', fontSize: '1.05rem' }}>
-                  Schedule Pickup Now
+                  Submit Pickup Request
                 </Link>
-                <Link to="/centers" className="btn-secondary" style={{ padding: '0.9rem 2rem', fontSize: '1.05rem' }}>
-                  Find Drop-off Centers
+                <Link to="/login" className="btn-secondary" style={{ padding: '0.9rem 2rem', fontSize: '1.05rem' }}>
+                  Staff / Admin Login
                 </Link>
               </>
             )}
           </div>
         </div>
 
-        {/* Dynamic Live Stats Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '4rem' }}>
+        {/* System Stats */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '4rem' }}>
           <GlassCard>
             <div style={{ fontSize: '2.25rem', fontWeight: '800', color: '#10b981', marginBottom: '0.25rem' }}>
               {stats.totalWeightRecycled.toFixed(1)} kg
             </div>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Total E-Waste Recycled</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Recycled E-Waste</div>
           </GlassCard>
           
           <GlassCard>
@@ -99,47 +106,51 @@ const Home = ({ user }) => {
             <div style={{ fontSize: '2.25rem', fontWeight: '800', color: '#a855f7', marginBottom: '0.25rem' }}>
               {stats.activeCenters}
             </div>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Certified Drop-off Centers</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Authorized Recycling Partners</div>
           </GlassCard>
         </div>
 
-        {/* How It Works */}
-        <div style={{ marginTop: '5rem' }}>
+        {/* 3 Core Modules Section */}
+        <div style={{ marginTop: '4rem' }}>
           <h2 style={{ textAlign: 'center', fontSize: '2.2rem', marginBottom: '3rem' }}>
-            How <span className="gradient-text">EcoWaste</span> Works
+            System <span className="gradient-text">Modules</span>
           </h2>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
             <GlassCard>
-              <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📅</div>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>1. Request Pickup</h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.5 }}>
-                Fill out a simple form specifying your old devices, estimated weight, and preferred date.
-              </p>
+              <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>👤</div>
+              <h3 style={{ fontSize: '1.3rem', marginBottom: '0.5rem', color: '#34d399' }}>User Module</h3>
+              <ul style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.7, paddingLeft: '1.2rem' }}>
+                <li>User Registration & Secure Login</li>
+                <li>Manage Contact Profile & Address</li>
+                <li>Submit Doorstep E-Waste Pickup Requests</li>
+                <li>Real-Time Request Status Timeline Tracking</li>
+                <li>Provide Service Ratings & Feedback</li>
+              </ul>
             </GlassCard>
 
             <GlassCard>
-              <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🚚</div>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>2. Doorstep Collection</h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.5 }}>
-                Our authorized green collectors arrive at your doorstep to weigh and collect the e-waste.
-              </p>
+              <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🚚</div>
+              <h3 style={{ fontSize: '1.3rem', marginBottom: '0.5rem', color: '#fbbf24' }}>Staff Module</h3>
+              <ul style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.7, paddingLeft: '1.2rem' }}>
+                <li>Staff Member Login</li>
+                <li>View Assigned Pickup Requests</li>
+                <li>Direct One-Click Contact User</li>
+                <li>Collect E-Waste from User Location</li>
+                <li>Transport E-Waste to Temporary Warehouse</li>
+              </ul>
             </GlassCard>
 
             <GlassCard>
-              <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>♻️</div>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>3. Eco-Friendly Processing</h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.5 }}>
-                Hazardous materials are safely isolated, and valuable metals are recovered cleanly.
-              </p>
-            </GlassCard>
-
-            <GlassCard>
-              <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🎁</div>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>4. Earn Rewards</h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.5 }}>
-                Get 10 Eco Points per kg recycled, redeemable for green discounts & gift vouchers!
-              </p>
+              <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>⚡</div>
+              <h3 style={{ fontSize: '1.3rem', marginBottom: '0.5rem', color: '#38bdf8' }}>Admin Module</h3>
+              <ul style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.7, paddingLeft: '1.2rem' }}>
+                <li>Admin Console & System Dashboard</li>
+                <li>Manage Registered Users & Staff Members</li>
+                <li>Verify Requests & Assign to Staff</li>
+                <li>Manage Temporary Warehouse Storage Records</li>
+                <li>Contact Authorized Recycling Centre & Complete Status</li>
+              </ul>
             </GlassCard>
           </div>
         </div>

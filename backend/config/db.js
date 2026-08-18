@@ -80,6 +80,15 @@ class MockModel {
     return { ...updatedDoc, save: async () => this.saveItem(updatedDoc) };
   }
 
+  async findByIdAndDelete(id) {
+    let data = readJsonFile(this.filename);
+    let index = data.findIndex(item => item._id === id);
+    if (index === -1) return null;
+    let deleted = data.splice(index, 1)[0];
+    writeJsonFile(this.filename, data);
+    return deleted;
+  }
+
   async saveItem(item) {
     let data = readJsonFile(this.filename);
     let index = data.findIndex(d => d._id === item._id);
@@ -97,7 +106,8 @@ global.dbMode = 'mongodb';
 global.mocks = {
   User: new MockModel('users.json'),
   PickupRequest: new MockModel('pickups.json'),
-  Center: new MockModel('centers.json')
+  Center: new MockModel('centers.json'),
+  Warehouse: new MockModel('warehouse.json')
 };
 
 const connectDB = async () => {

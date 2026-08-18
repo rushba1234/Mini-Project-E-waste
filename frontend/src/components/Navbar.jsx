@@ -11,9 +11,16 @@ const Navbar = ({ user, setUser }) => {
     navigate('/');
   };
 
+  const getDashboardPath = () => {
+    if (!user) return '/login';
+    if (user.role === 'admin') return '/admin';
+    if (user.role === 'staff') return '/staff';
+    return '/dashboard';
+  };
+
   return (
     <nav className="glass-nav" style={{ padding: '1rem 0' }}>
-      <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{
             width: '40px',
@@ -28,53 +35,51 @@ const Navbar = ({ user, setUser }) => {
           }}>
             ♻️
           </div>
-          <span style={{ fontSize: '1.4rem', fontWeight: '800', color: '#fff' }}>
-            Eco<span className="gradient-text">Waste</span>
+          <span style={{ fontSize: '1.3rem', fontWeight: '800', color: '#fff' }}>
+            E-Waste <span className="gradient-text">Collection Portal</span>
           </span>
         </Link>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
           <Link to="/" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontWeight: '500' }}>
             Home
           </Link>
           <Link to="/centers" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontWeight: '500' }}>
-            Collection Centers
+            Recycling Centers
           </Link>
 
           {user ? (
             <>
-              {user.role === 'admin' ? (
-                <Link to="/admin" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: '600' }}>
-                  Admin Panel ⚡
-                </Link>
-              ) : (
-                <Link to="/dashboard" style={{ color: '#34d399', textDecoration: 'none', fontWeight: '600' }}>
-                  My Dashboard 📋
-                </Link>
-              )}
+              <Link to={getDashboardPath()} style={{
+                color: user.role === 'admin' ? '#38bdf8' : user.role === 'staff' ? '#fbbf24' : '#34d399',
+                textDecoration: 'none',
+                fontWeight: '600'
+              }}>
+                {user.role === 'admin' ? 'Admin Portal ⚡' : user.role === 'staff' ? 'Staff Portal 🚚' : 'User Portal 📋'}
+              </Link>
 
-              {user.role === 'citizen' && (
+              {(user.role === 'user' || user.role === 'citizen') && (
                 <div style={{
                   background: 'rgba(16, 185, 129, 0.15)',
                   border: '1px solid rgba(16, 185, 129, 0.3)',
-                  padding: '0.4rem 0.9rem',
+                  padding: '0.35rem 0.8rem',
                   borderRadius: '20px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.5rem',
-                  fontSize: '0.875rem',
+                  gap: '0.4rem',
+                  fontSize: '0.85rem',
                   fontWeight: '600',
                   color: '#34d399'
                 }}>
-                  🌱 {user.ecoPoints || 0} Points
+                  🌱 {user.ecoPoints || 0} Pts
                 </div>
               )}
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span style={{ color: 'var(--text-main)', fontSize: '0.9rem', fontWeight: '500' }}>
-                  Hi, {user.name}
+                <span style={{ color: 'var(--text-main)', fontSize: '0.85rem', fontWeight: '500' }}>
+                  Hi, {user.name} <small style={{ color: 'var(--text-dim)', textTransform: 'capitalize' }}>({user.role})</small>
                 </span>
-                <button onClick={handleLogout} className="btn-secondary" style={{ padding: '0.4rem 0.9rem', fontSize: '0.85rem' }}>
+                <button onClick={handleLogout} className="btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>
                   Logout
                 </button>
               </div>
@@ -85,7 +90,7 @@ const Navbar = ({ user, setUser }) => {
                 Sign In
               </Link>
               <Link to="/register" className="btn-primary" style={{ padding: '0.5rem 1.1rem', fontSize: '0.9rem' }}>
-                Get Started
+                Register
               </Link>
             </div>
           )}

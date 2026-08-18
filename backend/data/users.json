@@ -16,5 +16,35 @@
     "role": "citizen",
     "ecoPoints": 120,
     "createdAt": "2026-07-21T17:41:11.742Z"
+  },
+  {
+    "_id": "2qprvgm3f",
+    "name": "Rushba K",
+    "email": "rushbak321@gmail.com",
+    "password": "$2a$10$18BEIsRukaOmvjP4Q/TbvOAxfMAi1ihYVirT6kjObNs9M/7I6OgEK",
+    "role": "admin",
+    "ecoPoints": 0,
+    "createdAt": "2026-08-04T03:34:19.683Z"
+  },
+  {
+    "_id": "myeowx8s4",
+    "name": "Alex Staff",
+    "email": "staff@ewaste.com",
+    "password": "$2a$10$5N.sW7MBmRDE938a.IR5vuKB590DAjypHp09Ap/iDRv0nhoYtLBEC",
+    "role": "staff",
+    "phone": "+91 98765 99999",
+    "ecoPoints": 0,
+    "createdAt": "2026-08-12T03:58:21.694Z"
+  },
+  {
+    "_id": "pzv5rpygy",
+    "name": "Rushba",
+    "email": "rushba321@gmail.com",
+    "password": "$2a$10$UnJD4CB.CbunyH29WQYwreBicZDXg66EZRQm4Qkhro6.iMCxQs9oS",
+    "role": "user",
+    "phone": "9876543210",
+    "address": "abcd",
+    "ecoPoints": 0,
+    "createdAt": "2026-08-12T04:02:53.950Z"
   }
 ]

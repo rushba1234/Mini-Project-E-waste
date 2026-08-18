@@ -8,7 +8,9 @@ const Register = ({ setUser }) => {
     name: '',
     email: '',
     password: '',
-    role: 'citizen'
+    phone: '',
+    address: '',
+    role: 'user'
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -31,6 +33,8 @@ const Register = ({ setUser }) => {
 
       if (res.data.user.role === 'admin') {
         navigate('/admin');
+      } else if (res.data.user.role === 'staff') {
+        navigate('/staff');
       } else {
         navigate('/dashboard');
       }
@@ -50,9 +54,11 @@ const Register = ({ setUser }) => {
           </button>
         </div>
         <GlassCard>
-          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
             <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Create Account</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Join the eco-friendly recycling movement</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+              Register on the E-Waste Collection Portal
+            </p>
           </div>
 
           {error && (
@@ -76,7 +82,7 @@ const Register = ({ setUser }) => {
                 type="text"
                 name="name"
                 className="form-input"
-                placeholder="John Doe"
+                placeholder="Jane Doe"
                 value={formData.name}
                 onChange={handleChange}
                 required
@@ -110,6 +116,30 @@ const Register = ({ setUser }) => {
             </div>
 
             <div className="form-group">
+              <label className="form-label">Phone Number</label>
+              <input
+                type="text"
+                name="phone"
+                className="form-input"
+                placeholder="+91 98765 43210"
+                value={formData.phone}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Default Pickup Address</label>
+              <input
+                type="text"
+                name="address"
+                className="form-input"
+                placeholder="House / Street / City"
+                value={formData.address}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="form-group">
               <label className="form-label">Account Role</label>
               <select
                 name="role"
@@ -117,8 +147,9 @@ const Register = ({ setUser }) => {
                 value={formData.role}
                 onChange={handleChange}
               >
-                <option value="citizen">Citizen (Schedule Pickups & Earn Rewards)</option>
-                <option value="admin">Administrator / Collector</option>
+                <option value="user">User (Submit Doorstep E-Waste Requests)</option>
+                <option value="staff">Staff (Collection & Warehouse Transport)</option>
+                <option value="admin">Administrator</option>
               </select>
             </div>
 

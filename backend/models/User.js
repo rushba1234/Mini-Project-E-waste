@@ -4,7 +4,9 @@ const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['citizen', 'admin'], default: 'citizen' },
+  role: { type: String, enum: ['user', 'citizen', 'staff', 'admin'], default: 'user' },
+  phone: { type: String, default: '' },
+  address: { type: String, default: '' },
   ecoPoints: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
 });
@@ -26,6 +28,9 @@ const UserModel = {
   },
   findByIdAndUpdate: async (id, update, options) => {
     return global.dbMode === 'json' ? global.mocks.User.findByIdAndUpdate(id, update, options) : MongoUser.findByIdAndUpdate(id, update, options);
+  },
+  findByIdAndDelete: async (id) => {
+    return global.dbMode === 'json' ? global.mocks.User.findByIdAndDelete(id) : MongoUser.findByIdAndDelete(id);
   }
 };
 

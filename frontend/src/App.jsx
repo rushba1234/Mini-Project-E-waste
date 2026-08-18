@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import StaffDashboard from './pages/StaffDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Centers from './pages/Centers';
 
@@ -22,6 +23,13 @@ function App() {
     }
   }, []);
 
+  const getRedirectPath = (u) => {
+    if (!u) return '/login';
+    if (u.role === 'admin') return '/admin';
+    if (u.role === 'staff') return '/staff';
+    return '/dashboard';
+  };
+
   return (
     <Router>
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -34,17 +42,23 @@ function App() {
             
             <Route
               path="/login"
-              element={user ? <Navigate to={user.role === 'admin' ? '/admin' : '/dashboard'} /> : <Login setUser={setUser} />}
+              element={user ? <Navigate to={getRedirectPath(user)} /> : <Login setUser={setUser} />}
             />
             <Route
               path="/register"
-              element={user ? <Navigate to={user.role === 'admin' ? '/admin' : '/dashboard'} /> : <Register setUser={setUser} />}
+              element={user ? <Navigate to={getRedirectPath(user)} /> : <Register setUser={setUser} />}
             />
             
             <Route
               path="/dashboard"
               element={user ? <Dashboard user={user} setUser={setUser} /> : <Navigate to="/login" />}
             />
+
+            <Route
+              path="/staff"
+              element={user && user.role === 'staff' ? <StaffDashboard user={user} /> : <Navigate to="/login" />}
+            />
+
             <Route
               path="/admin"
               element={user && user.role === 'admin' ? <AdminDashboard /> : <Navigate to="/login" />}
@@ -61,7 +75,7 @@ function App() {
           background: 'rgba(9, 13, 22, 0.9)'
         }}>
           <div className="container">
-            <p>🌱 <strong>EcoWaste Platform</strong> — Responsible E-Waste Recycling & Rewards System</p>
+            <p>🌱 <strong>E-Waste Collection Portal</strong> — Safe Doorstep Collection & Responsible Recycling System</p>
             <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '0.5rem' }}>
               Built with React, Node.js, Express & MongoDB (MERN Stack)
             </p>
