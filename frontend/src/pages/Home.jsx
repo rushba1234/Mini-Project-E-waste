@@ -154,6 +154,47 @@ const Home = ({ user }) => {
             </GlassCard>
           </div>
         </div>
+
+        {/* How It Works */}
+        <div style={{ marginTop: '5rem' }}>
+          <h2 style={{ textAlign: 'center', fontSize: '2.2rem', marginBottom: '3rem' }}>
+            How <span className="gradient-text">It Works</span>
+          </h2>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '2rem' }}>
+            <GlassCard>
+              <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📅</div>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>1. Request Pickup</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.5 }}>
+                Fill out a simple form specifying your old devices, estimated weight, and preferred date.
+              </p>
+            </GlassCard>
+
+            <GlassCard>
+              <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🚚</div>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>2. Doorstep Collection</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.5 }}>
+                Our authorized green collectors arrive at your doorstep to weigh and collect the e-waste.
+              </p>
+            </GlassCard>
+
+            <GlassCard>
+              <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>♻️</div>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>3. Eco-Friendly Processing</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.5 }}>
+                Hazardous materials are safely isolated, and valuable metals are recovered cleanly.
+              </p>
+            </GlassCard>
+
+            <GlassCard>
+              <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🎁</div>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>4. Earn Rewards</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.5 }}>
+                Get 10 Eco Points per kg recycled, redeemable for green discounts & gift vouchers!
+              </p>
+            </GlassCard>
+          </div>
+        </div>
       </div>
     </div>
   );

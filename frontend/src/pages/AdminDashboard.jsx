@@ -119,6 +119,18 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleStatusChange = async (requestId, newStatus) => {
+    try {
+      setUpdateMsg('Updating status...');
+      const res = await API.put(`/pickups/${requestId}/status`, { status: newStatus });
+      setRequests(requests.map(r => r._id === requestId ? res.data : r));
+      setUpdateMsg(`Status updated to "${newStatus}"! Points awarded if recycled.`);
+      setTimeout(() => setUpdateMsg(''), 4000);
+    } catch (err) {
+      setUpdateMsg(err.response?.data?.msg || 'Failed to update status');
+    }
+  };
+
   const filteredRequests = requests.filter(r => {
     if (filter === 'all') return true;
     return r.status === filter;
@@ -173,6 +185,13 @@ const AdminDashboard = () => {
               {totalWeightRecycled.toFixed(1)} kg
             </div>
           </GlassCard>
+
+          <GlassCard>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Pending Requests</div>
+            <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#fbbf24', marginTop: '0.25rem' }}>
+              {requests.filter(r => r.status === 'pending').length}
+            </div>
+          </GlassCard>
         </div>
 
         {/* Action Message Alert */}
@@ -191,7 +210,7 @@ const AdminDashboard = () => {
         )}
 
         {/* Tab Navigation */}
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-glass)', pb: '0.75rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-glass)', flexWrap: 'wrap' }}>
           {[
             { id: 'requests', label: '📋 Pickup Requests & Assignment' },
             { id: 'users', label: '👥 Manage Users' },
@@ -297,7 +316,7 @@ const AdminDashboard = () => {
                       </div>
 
                       {/* Admin Workflow Actions: Verify & Assign Staff */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.25rem', pt: '0.5rem', borderTop: '1px dashed var(--border-glass)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.25rem', borderTop: '1px dashed var(--border-glass)', paddingTop: '0.5rem' }}>
                         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                           {req.status === 'pending' && (
                             <button
@@ -327,6 +346,31 @@ const AdminDashboard = () => {
                               <option key={s._id} value={s._id}>{s.name} ({s.email})</option>
                             ))}
                           </select>
+                        </div>
+
+                        {/* Status update buttons */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Update Status:</span>
+                          {['pending', 'verified', 'assigned', 'collected', 'warehouse', 'recycled'].map(st => (
+                            <button
+                              key={st}
+                              disabled={req.status === st}
+                              onClick={() => handleStatusChange(req._id, st)}
+                              style={{
+                                background: req.status === st ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)',
+                                border: req.status === st ? '1px solid var(--primary)' : '1px solid var(--border-glass)',
+                                color: req.status === st ? '#fff' : 'var(--text-muted)',
+                                opacity: req.status === st ? 0.6 : 1,
+                                padding: '0.3rem 0.6rem',
+                                borderRadius: '6px',
+                                fontSize: '0.75rem',
+                                cursor: req.status === st ? 'default' : 'pointer',
+                                textTransform: 'capitalize'
+                              }}
+                            >
+                              {st}
+                            </button>
+                          ))}
                         </div>
                       </div>
                     </div>
