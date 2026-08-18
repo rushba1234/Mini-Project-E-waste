@@ -9,15 +9,6 @@
     "createdAt": "2026-07-21T17:41:11.660Z"
   },
   {
-    "_id": "sqcq2snh9",
-    "name": "John Doe",
-    "email": "citizen@ewaste.com",
-    "password": "$2a$10$PNPOQDR.cx9//rdXLIPxCOBr4F8L7I2D9dD38tnYs4KDmps5UEIu6",
-    "role": "citizen",
-    "ecoPoints": 120,
-    "createdAt": "2026-07-21T17:41:11.742Z"
-  },
-  {
     "_id": "2qprvgm3f",
     "name": "Rushba K",
     "email": "rushbak321@gmail.com",
@@ -46,5 +37,49 @@
     "address": "abcd",
     "ecoPoints": 0,
     "createdAt": "2026-08-12T04:02:53.950Z"
+  },
+  {
+    "_id": "gnbtqmuuj",
+    "name": "Rushba K",
+    "email": "rushba123@gmail.com",
+    "password": "$2a$10$YVK7cV.8AfmAwJvvpJ22UemtN0JrWVi.OsJIxu4DRp2ZIm2E5iBru",
+    "role": "admin",
+    "phone": "8590475275",
+    "address": "abcd",
+    "ecoPoints": 0,
+    "createdAt": "2026-08-16T04:06:01.297Z"
+  },
+  {
+    "_id": "rziui6djm",
+    "name": "Rahul",
+    "email": "rahul@gmail.com",
+    "password": "$2a$10$C/R1oa5H/2aFmB/jiOEi0Od04LSvKkoXhEg0uJ.amKbf0d0yNiNdK",
+    "role": "staff",
+    "phone": "9999911111",
+    "address": "",
+    "ecoPoints": 0,
+    "createdAt": "2026-08-16T04:08:56.838Z"
+  },
+  {
+    "_id": "vq404v5c8",
+    "name": "Ram",
+    "email": "ram@gmail.com",
+    "password": "$2a$10$Xk3fxYazAlUr2YjR2spy8.0viu3KhycOFxkDAzCdB7c/OkCX8uJeq",
+    "role": "user",
+    "phone": "9999922222",
+    "address": "xyz street",
+    "ecoPoints": 0,
+    "createdAt": "2026-08-16T04:14:22.873Z"
+  },
+  {
+    "_id": "lhcue3hut",
+    "name": "rahila",
+    "email": "rahila@gmail.com",
+    "password": "$2a$10$qK8TZ1DMrdr4WeXMweHfN.PYN8VWxufzMkJbtBWWMkhsJROA7Ckjm",
+    "role": "user",
+    "phone": "9876543210",
+    "address": "xyz street",
+    "ecoPoints": 0,
+    "createdAt": "2026-08-18T06:37:18.896Z"
   }
 ]

@@ -1,0 +1,14 @@
+[
+  {
+    "_id": "sxn5g8msl",
+    "batchCode": "WH-BATCH-3551",
+    "itemCount": 1,
+    "totalWeight": 4,
+    "requestIds": [
+      "ru9u6vwb8",
+      "md3kkr41f"
+    ],
+    "status": "stored",
+    "createdAt": "2026-08-16T04:09:43.122Z"
+  }
+]

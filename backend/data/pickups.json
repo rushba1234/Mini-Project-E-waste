@@ -1,1 +1,30 @@
-[]
+[
+  {
+    "_id": "ru9u6vwb8",
+    "user": "pzv5rpygy",
+    "userName": "Rushba",
+    "userPhone": "9876543210",
+    "category": "Laptops",
+    "description": "broken",
+    "weight": 4,
+    "address": "abcd",
+    "pickupDate": "2026-08-12",
+    "status": "pending",
+    "pointsAwarded": 0,
+    "createdAt": "2026-08-16T04:02:15.946Z"
+  },
+  {
+    "_id": "md3kkr41f",
+    "user": "vq404v5c8",
+    "userName": "Ram",
+    "userPhone": "9999922222",
+    "category": "Televisions",
+    "description": "damaged",
+    "weight": 6,
+    "address": "xyz street",
+    "pickupDate": "2026-08-16",
+    "status": "pending",
+    "pointsAwarded": 0,
+    "createdAt": "2026-08-16T04:15:14.725Z"
+  }
+]
