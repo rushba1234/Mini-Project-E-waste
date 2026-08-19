@@ -81,5 +81,27 @@
     "address": "xyz street",
     "ecoPoints": 0,
     "createdAt": "2026-08-18T06:37:18.896Z"
+  },
+  {
+    "_id": "f2h4zvvnx",
+    "name": "rumaisa",
+    "email": "rumi@gmail.com",
+    "password": "$2a$10$tZk2STXU2s2wWJKk6LbVCuujviDkQmp8VepxoeLgwX2HNgQ3t4FoC",
+    "role": "user",
+    "phone": "91234567890",
+    "address": "abcd",
+    "ecoPoints": 0,
+    "createdAt": "2026-08-18T10:18:57.217Z"
+  },
+  {
+    "_id": "o8x11fb7h",
+    "name": "john",
+    "email": "john@gmail.com",
+    "password": "$2a$10$YWLBE8D2RO72nvPcV4EibOtfd4Bz3UDFuF7bAOJ3edZtJJ9WmAFBq",
+    "role": "staff",
+    "phone": "9999000011",
+    "address": "",
+    "ecoPoints": 0,
+    "createdAt": "2026-08-18T10:22:46.565Z"
   }
 ]

@@ -26,5 +26,33 @@
     "status": "pending",
     "pointsAwarded": 0,
     "createdAt": "2026-08-16T04:15:14.725Z"
+  },
+  {
+    "_id": "lyabj013r",
+    "user": "f2h4zvvnx",
+    "userName": "rumaisa",
+    "userPhone": "91234567890",
+    "category": "Appliances",
+    "description": "damaged",
+    "weight": 6,
+    "address": "abcd",
+    "pickupDate": "2026-08-18",
+    "status": "pending",
+    "pointsAwarded": 0,
+    "createdAt": "2026-08-18T10:21:33.190Z"
+  },
+  {
+    "_id": "xl2c6kbsa",
+    "user": "lhcue3hut",
+    "userName": "rahila",
+    "userPhone": "9876543210",
+    "category": "Televisions",
+    "description": "broken",
+    "weight": 15,
+    "address": "xyz street",
+    "pickupDate": "2026-08-06",
+    "status": "pending",
+    "pointsAwarded": 0,
+    "createdAt": "2026-08-18T14:44:03.933Z"
   }
 ]
