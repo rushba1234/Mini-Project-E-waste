@@ -114,9 +114,9 @@ const connectDB = async () => {
   const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/ewaste_collection';
   try {
     console.log('Connecting to MongoDB at:', mongoURI);
-    // Use short timeout so we fallback quickly if MongoDB is not running
+    // Give enough timeout for local or Atlas cloud MongoDB connection
     await mongoose.connect(mongoURI, {
-      serverSelectionTimeoutMS: 2000
+      serverSelectionTimeoutMS: 5000
     });
     console.log('MongoDB Connected successfully!');
     global.dbMode = 'mongodb';
