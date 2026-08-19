@@ -1,6 +1,13 @@
 const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
+const dns = require('dns');
+
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch (e) {
+  // Ignore if DNS server override is restricted
+}
 
 const dataDir = path.join(__dirname, '..', 'data');
 if (!fs.existsSync(dataDir)) {
