@@ -77,7 +77,7 @@ const Navbar = ({ user, setUser }) => {
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <span style={{ color: 'var(--text-main)', fontSize: '0.85rem', fontWeight: '500' }}>
-                  Hi, {user.name} <small style={{ color: 'var(--text-dim)', textTransform: 'capitalize' }}>({user.role})</small>
+                  Hi, {user?.name || 'User'} <small style={{ color: 'var(--text-dim)', textTransform: 'capitalize' }}>({user?.role || 'user'})</small>
                 </span>
                 <button onClick={handleLogout} className="btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>
                   Logout

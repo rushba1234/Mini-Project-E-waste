@@ -7,6 +7,11 @@ const User = require('../models/User');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'ewaste_secret_key_123';
 
+const isValidPhone = (phone) => {
+  if (!phone || typeof phone !== 'string') return false;
+  return /^\d{10}$/.test(phone.trim());
+};
+
 // @route   POST api/auth/register
 // @desc    Register a user
 // @access  Public
@@ -17,6 +22,14 @@ router.post('/register', async (req, res) => {
     let user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({ msg: 'User already exists' });
+    }
+
+    if (!phone || !isValidPhone(phone)) {
+      return res.status(400).json({ msg: 'Please enter a valid 10-digit phone number.' });
+    }
+    const existingPhone = await User.findOne({ phone: phone.trim() });
+    if (existingPhone) {
+      return res.status(400).json({ msg: 'Phone number already exists.' });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -115,6 +128,14 @@ router.post('/login', async (req, res) => {
   }
 });
 
+const toPlainUser = (u) => {
+  if (!u) return null;
+  const obj = u.toObject ? u.toObject() : { ...u };
+  delete obj.password;
+  delete obj.save;
+  return obj;
+};
+
 // @route   GET api/auth/user
 // @desc    Get logged in user
 // @access  Private
@@ -124,9 +145,7 @@ router.get('/user', auth, async (req, res) => {
     if (!user) {
       return res.status(404).json({ msg: 'User not found' });
     }
-    const userCopy = { ...user };
-    delete userCopy.password;
-    res.json(userCopy);
+    res.json(toPlainUser(user));
   } catch (err) {
     console.error('Get user error:', err.message);
     res.status(500).send('Server error');
@@ -145,14 +164,21 @@ router.put('/profile', auth, async (req, res) => {
     }
 
     if (name) user.name = name;
-    if (phone !== undefined) user.phone = phone;
+    if (phone !== undefined) {
+      if (!isValidPhone(phone)) {
+        return res.status(400).json({ msg: 'Please enter a valid 10-digit phone number.' });
+      }
+      const existingPhone = await User.findOne({ phone: phone.trim() });
+      if (existingPhone && String(existingPhone._id) !== String(req.user.id)) {
+        return res.status(400).json({ msg: 'Phone number already exists.' });
+      }
+      user.phone = phone.trim();
+    }
     if (address !== undefined) user.address = address;
 
     await user.save();
 
-    const userCopy = { ...user };
-    delete userCopy.password;
-    res.json(userCopy);
+    res.json(toPlainUser(user));
   } catch (err) {
     console.error('Update profile error:', err.message);
     res.status(500).send('Server error');
@@ -177,9 +203,7 @@ router.post('/redeem', auth, async (req, res) => {
     user.ecoPoints = (user.ecoPoints || 0) - points;
     await user.save();
 
-    const userCopy = { ...user };
-    delete userCopy.password;
-    res.json(userCopy);
+    res.json(toPlainUser(user));
   } catch (err) {
     console.error('Redeem points error:', err.message);
     res.status(500).send('Server error');
@@ -192,11 +216,7 @@ router.post('/redeem', auth, async (req, res) => {
 router.get('/staff', auth, async (req, res) => {
   try {
     const allUsers = await User.find({ role: 'staff' });
-    const staffList = allUsers.map(u => {
-      const uCopy = { ...u };
-      delete uCopy.password;
-      return uCopy;
-    });
+    const staffList = allUsers.map(toPlainUser);
     res.json(staffList);
   } catch (err) {
     console.error('Get staff error:', err.message);
@@ -218,6 +238,14 @@ router.post('/staff', auth, async (req, res) => {
       return res.status(400).json({ msg: 'Account with this email already exists' });
     }
 
+    if (!phone || !isValidPhone(phone)) {
+      return res.status(400).json({ msg: 'Please enter a valid 10-digit phone number.' });
+    }
+    const existingPhone = await User.findOne({ phone: phone.trim() });
+    if (existingPhone) {
+      return res.status(400).json({ msg: 'Phone number already exists.' });
+    }
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password || 'staff123', salt);
 
@@ -231,9 +259,7 @@ router.post('/staff', auth, async (req, res) => {
       ecoPoints: 0
     });
 
-    const staffCopy = { ...staffMember };
-    delete staffCopy.password;
-    res.json(staffCopy);
+    res.json(toPlainUser(staffMember));
   } catch (err) {
     console.error('Create staff error:', err.message);
     res.status(500).send('Server error');
@@ -250,12 +276,8 @@ router.get('/users', auth, async (req, res) => {
   try {
     const users = await User.find({});
     const citizenUsers = users
-      .filter(u => u.role === 'user' || u.role === 'citizen')
-      .map(u => {
-        const uCopy = { ...u };
-        delete uCopy.password;
-        return uCopy;
-      });
+      .filter(u => u.role === 'user' || u.role === 'citizen' || !u.role)
+      .map(toPlainUser);
     res.json(citizenUsers);
   } catch (err) {
     console.error('Get users error:', err.message);

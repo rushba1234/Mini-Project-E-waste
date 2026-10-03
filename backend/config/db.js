@@ -40,31 +40,42 @@ class MockModel {
   
   async find(query = {}) {
     let data = readJsonFile(this.filename);
+    const self = this;
     return data.filter(item => {
       for (let key in query) {
-        if (item[key] !== query[key]) return false;
+        if (String(item[key]) !== String(query[key])) return false;
       }
       return true;
-    }).map(item => ({ ...item, save: async () => this.saveItem(item) }));
+    }).map(item => {
+      const resObj = { ...item };
+      resObj.save = async function() { return self.saveItem(this); };
+      return resObj;
+    });
   }
 
   async findOne(query = {}) {
     let data = readJsonFile(this.filename);
     const item = data.find(item => {
       for (let key in query) {
-        if (item[key] !== query[key]) return false;
+        if (String(item[key]) !== String(query[key])) return false;
       }
       return true;
     });
     if (!item) return null;
-    return { ...item, save: async () => this.saveItem(item) };
+    const self = this;
+    const resObj = { ...item };
+    resObj.save = async function() { return self.saveItem(this); };
+    return resObj;
   }
 
   async findById(id) {
     let data = readJsonFile(this.filename);
-    const item = data.find(item => item._id === id);
+    const item = data.find(item => String(item._id) === String(id));
     if (!item) return null;
-    return { ...item, save: async () => this.saveItem(item) };
+    const self = this;
+    const resObj = { ...item };
+    resObj.save = async function() { return self.saveItem(this); };
+    return resObj;
   }
 
   async create(doc) {
@@ -72,24 +83,29 @@ class MockModel {
     const newDoc = { _id: Math.random().toString(36).substr(2, 9), ...doc, createdAt: new Date() };
     data.push(newDoc);
     writeJsonFile(this.filename, data);
-    return { ...newDoc, save: async () => this.saveItem(newDoc) };
+    const self = this;
+    const resObj = { ...newDoc };
+    resObj.save = async function() { return self.saveItem(this); };
+    return resObj;
   }
 
   async findByIdAndUpdate(id, update, options = {}) {
     let data = readJsonFile(this.filename);
-    let index = data.findIndex(item => item._id === id);
+    let index = data.findIndex(item => String(item._id) === String(id));
     if (index === -1) return null;
     
-    // Support MongoDB style updates ($inc, $push, etc., if basic, or just merge)
     let updatedDoc = { ...data[index], ...update };
     data[index] = updatedDoc;
     writeJsonFile(this.filename, data);
-    return { ...updatedDoc, save: async () => this.saveItem(updatedDoc) };
+    const self = this;
+    const resObj = { ...updatedDoc };
+    resObj.save = async function() { return self.saveItem(this); };
+    return resObj;
   }
 
   async findByIdAndDelete(id) {
     let data = readJsonFile(this.filename);
-    let index = data.findIndex(item => item._id === id);
+    let index = data.findIndex(item => String(item._id) === String(id));
     if (index === -1) return null;
     let deleted = data.splice(index, 1)[0];
     writeJsonFile(this.filename, data);
@@ -98,11 +114,13 @@ class MockModel {
 
   async saveItem(item) {
     let data = readJsonFile(this.filename);
-    let index = data.findIndex(d => d._id === item._id);
+    let cleanItem = { ...item };
+    delete cleanItem.save;
+    let index = data.findIndex(d => String(d._id) === String(cleanItem._id));
     if (index === -1) {
-      data.push(item);
+      data.push(cleanItem);
     } else {
-      data[index] = item;
+      data[index] = cleanItem;
     }
     writeJsonFile(this.filename, data);
     return item;

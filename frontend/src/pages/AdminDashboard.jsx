@@ -10,6 +10,7 @@ const AdminDashboard = () => {
   const [staff, setStaff] = useState([]);
   const [warehouseData, setWarehouseData] = useState({ batches: [], totalStoredWeight: 0, totalStoredItems: 0 });
   const [centers, setCenters] = useState([]);
+  const [feedbacks, setFeedbacks] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -24,12 +25,13 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [reqRes, staffRes, usersRes, whRes, centersRes] = await Promise.all([
+      const [reqRes, staffRes, usersRes, whRes, centersRes, fbRes] = await Promise.all([
         API.get('/pickups'),
         API.get('/auth/staff').catch(() => ({ data: [] })),
         API.get('/auth/users').catch(() => ({ data: [] })),
         API.get('/warehouse').catch(() => ({ data: { batches: [], totalStoredWeight: 0, totalStoredItems: 0 } })),
-        API.get('/centers').catch(() => ({ data: [] }))
+        API.get('/centers').catch(() => ({ data: [] })),
+        API.get('/pickups/feedback').catch(() => ({ data: [] }))
       ]);
 
       setRequests(reqRes.data);
@@ -37,6 +39,7 @@ const AdminDashboard = () => {
       setUsers(usersRes.data);
       setWarehouseData(whRes.data);
       setCenters(centersRes.data);
+      setFeedbacks(fbRes.data);
     } catch (err) {
       console.error('Error fetching admin dashboard data:', err);
     } finally {
@@ -100,22 +103,23 @@ const AdminDashboard = () => {
 
   const handleDispatchRecycling = async (e) => {
     e.preventDefault();
-    if (!selectedBatch && warehouseData.batches.length === 0) {
-      alert('No warehouse batch available for dispatch.');
-      return;
-    }
-    const bId = selectedBatch || warehouseData.batches[0]?.batchCode || warehouseData.batches[0]?._id;
+    const storedBatches = warehouseData.batches?.filter(b => b.status === 'stored') || [];
+    const bId = selectedBatch || (storedBatches[0] ? (storedBatches[0].batchCode || storedBatches[0]._id) : '');
+
     try {
       setUpdateMsg('Dispatching batch to authorized recycling centre...');
       const res = await API.post('/warehouse/dispatch', {
         batchId: bId,
         recyclingCentre: selectedCenter
       });
-      setUpdateMsg(res.data.msg);
+      setUpdateMsg(`✅ ${res.data.msg}`);
+      setSelectedBatch('');
       fetchData(); // Refresh data
       setTimeout(() => setUpdateMsg(''), 5000);
     } catch (err) {
-      alert(err.response?.data?.msg || 'Dispatch failed.');
+      const errorMsg = err.response?.data?.msg || (typeof err.response?.data === 'string' ? err.response.data : null) || 'Dispatch failed.';
+      alert(errorMsg);
+      setUpdateMsg(`❌ ${errorMsg}`);
     }
   };
 
@@ -213,6 +217,7 @@ const AdminDashboard = () => {
         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-glass)', flexWrap: 'wrap' }}>
           {[
             { id: 'requests', label: '📋 Pickup Requests & Assignment' },
+            { id: 'feedback', label: '💬 User Feedback' },
             { id: 'users', label: '👥 Manage Users' },
             { id: 'staff', label: '🚚 Manage Staff' },
             { id: 'warehouse', label: '🏬 Warehouse Records' },
@@ -329,23 +334,39 @@ const AdminDashboard = () => {
                           )}
                         </div>
 
-                        {/* Assign Staff Dropdown */}
+                        {/* Assign Staff Dropdown - Assigned Only Once */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Assigned Staff:</span>
-                          <select
-                            className="form-select"
-                            style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', width: 'auto' }}
-                            value={req.assignedStaff || ''}
-                            onChange={(e) => {
-                              const selected = staff.find(s => s._id === e.target.value);
-                              handleAssignStaff(req._id, e.target.value, selected ? selected.name : 'Staff');
-                            }}
-                          >
-                            <option value="">-- Assign Staff --</option>
-                            {staff.map(s => (
-                              <option key={s._id} value={s._id}>{s.name} ({s.email})</option>
-                            ))}
-                          </select>
+                          {req.assignedStaff ? (
+                            <span style={{
+                              background: 'rgba(251, 191, 36, 0.15)',
+                              border: '1px solid rgba(251, 191, 36, 0.3)',
+                              color: '#fbbf24',
+                              padding: '0.25rem 0.65rem',
+                              borderRadius: '6px',
+                              fontSize: '0.75rem',
+                              fontWeight: '600'
+                            }}>
+                              🔒 {req.assignedStaffName || 'Staff Assigned'} (Reassignment not allowed)
+                            </span>
+                          ) : (
+                            <select
+                              className="form-select"
+                              style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', width: 'auto' }}
+                              value={req.assignedStaff || ''}
+                              onChange={(e) => {
+                                const selected = staff.find(s => String(s._id) === String(e.target.value));
+                                handleAssignStaff(req._id, e.target.value, selected ? selected.name : 'Staff');
+                              }}
+                            >
+                              <option value="">-- Assign Staff --</option>
+                              {staff.map(s => (
+                                <option key={s._id} value={s._id}>
+                                  {s.name || 'Staff Member'} ({s.email || 'No email'})
+                                </option>
+                              ))}
+                            </select>
+                          )}
                         </div>
 
                         {/* Status update buttons */}
@@ -498,7 +519,7 @@ const AdminDashboard = () => {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {staff.map(s => {
-                    const assignedTasks = requests.filter(r => r.assignedStaff === s._id);
+                    const assignedTasks = requests.filter(r => String(r.assignedStaff) === String(s._id));
                     return (
                       <div
                         key={s._id}
@@ -655,6 +676,74 @@ const AdminDashboard = () => {
               </div>
             </GlassCard>
           </div>
+        )}
+
+        {/* TAB: User Feedback */}
+        {activeTab === 'feedback' && (
+          <GlassCard style={{ padding: '1.5rem' }}>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.3rem', marginBottom: '0.25rem', color: '#38bdf8' }}>💬 User Feedback Log</h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                View ratings and comments submitted by users for completed e-waste pickups.
+              </p>
+            </div>
+
+            {(() => {
+              const allFeedback = (feedbacks.length > 0 ? feedbacks : requests.filter(r => r.feedback && (r.feedback.comment || r.feedback.rating > 0)).map(r => ({
+                requestId: r._id,
+                userName: r.userName,
+                userPhone: r.userPhone,
+                category: r.category,
+                rating: r.feedback.rating,
+                message: r.feedback.comment,
+                comment: r.feedback.comment,
+                date: r.feedback.date || r.createdAt
+              })));
+
+              if (allFeedback.length === 0) {
+                return (
+                  <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '3rem 0' }}>
+                    No user feedback submitted yet.
+                  </p>
+                );
+              }
+
+              return (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.25rem' }}>
+                  {allFeedback.map((fb, idx) => (
+                    <div
+                      key={fb.requestId || idx}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.02)',
+                        border: '1px solid var(--border-glass)',
+                        borderRadius: '12px',
+                        padding: '1.25rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.65rem'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <strong style={{ fontSize: '1.05rem', color: '#fff' }}>👤 {fb.userName}</strong>
+                        <span style={{ fontSize: '0.9rem', color: '#fbbf24' }}>
+                          {'⭐'.repeat(fb.rating || 5)} ({fb.rating || 5}/5)
+                        </span>
+                      </div>
+
+                      <div style={{ fontSize: '0.9rem', color: '#e2e8f0', background: 'rgba(0,0,0,0.25)', padding: '0.75rem', borderRadius: '8px', borderLeft: '3px solid #38bdf8' }}>
+                        "{fb.message || fb.comment || 'No comment provided'}"
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '0.25rem' }}>
+                        <span>📦 Item: <strong>{fb.category || 'E-Waste'}</strong></span>
+                        <span>📅 Date: {fb.date ? new Date(fb.date).toLocaleDateString() : 'Recent'}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </GlassCard>
         )}
       </div>
     </div>

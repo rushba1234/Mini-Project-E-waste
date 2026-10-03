@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 const Warehouse = require('../models/Warehouse');
 const PickupRequest = require('../models/PickupRequest');
@@ -31,7 +32,7 @@ router.get('/', auth, async (req, res) => {
     });
   } catch (err) {
     console.error('Get warehouse records error:', err.message);
-    res.status(500).send('Server error');
+    res.status(500).json({ msg: 'Server error fetching warehouse records' });
   }
 });
 
@@ -46,14 +47,42 @@ router.post('/dispatch', auth, async (req, res) => {
   const { batchId, recyclingCentre } = req.body;
 
   try {
-    let batch = await Warehouse.findById(batchId);
+    let batch = null;
+
+    // 1. If batchId provided, try finding by ID (only if valid ObjectId in Mongo mode) or by batchCode
+    if (batchId) {
+      if (global.dbMode === 'json' || mongoose.Types.ObjectId.isValid(batchId)) {
+        batch = await Warehouse.findById(batchId);
+      }
+      if (!batch) {
+        batch = await Warehouse.findOne({ batchCode: batchId });
+      }
+    }
+
+    // 2. If no batch found by batchId, fallback to finding the first active 'stored' batch
     if (!batch) {
-      // If batchId is passed as code, try finding by query
-      batch = await Warehouse.findOne({ batchCode: batchId });
+      batch = await Warehouse.findOne({ status: 'stored' });
+    }
+
+    // 3. If no stored batch object exists, auto-package any pickup requests currently in 'warehouse' status
+    if (!batch) {
+      const warehouseRequests = await PickupRequest.find({ status: 'warehouse' });
+      if (warehouseRequests.length > 0) {
+        const totalWeight = warehouseRequests.reduce((acc, r) => acc + (r.weight || 0), 0);
+        const reqIds = warehouseRequests.map(r => r._id);
+        const code = `WH-BATCH-${Math.floor(1000 + Math.random() * 9000)}`;
+        batch = await Warehouse.create({
+          batchCode: code,
+          itemCount: warehouseRequests.length,
+          totalWeight: totalWeight,
+          requestIds: reqIds,
+          status: 'stored'
+        });
+      }
     }
 
     if (!batch) {
-      return res.status(404).json({ msg: 'Warehouse batch not found' });
+      return res.status(404).json({ msg: 'No active warehouse batch or items available for recycling dispatch.' });
     }
 
     batch.status = 'recycled';
@@ -64,45 +93,68 @@ router.post('/dispatch', auth, async (req, res) => {
     // Update all pickup requests associated with this batch
     if (batch.requestIds && batch.requestIds.length > 0) {
       for (const reqId of batch.requestIds) {
-        const pickup = await PickupRequest.findById(reqId);
+        let pickup = null;
+        if (global.dbMode === 'json' || mongoose.Types.ObjectId.isValid(reqId)) {
+          pickup = await PickupRequest.findById(reqId);
+        }
+        if (!pickup) {
+          pickup = await PickupRequest.findOne({ _id: reqId });
+        }
+
         if (pickup && pickup.status !== 'recycled') {
           pickup.status = 'recycled';
           if (pickup.pointsAwarded === 0) {
-            const pts = Math.round(pickup.weight * 10);
+            const pts = Math.round((pickup.weight || 0) * 10);
             pickup.pointsAwarded = pts;
 
-            const u = await User.findById(pickup.user);
-            if (u) {
-              u.ecoPoints = (u.ecoPoints || 0) + pts;
-              await u.save();
+            if (pickup.user) {
+              let u = null;
+              if (global.dbMode === 'json' || mongoose.Types.ObjectId.isValid(pickup.user)) {
+                u = await User.findById(pickup.user);
+              }
+              if (!u) {
+                u = await User.findOne({ _id: pickup.user });
+              }
+              if (u) {
+                u.ecoPoints = (u.ecoPoints || 0) + pts;
+                await u.save();
+              }
             }
           }
           await pickup.save();
         }
       }
-    } else {
-      // Fallback: update any requests currently in status 'warehouse'
-      const warehouseRequests = await PickupRequest.find({ status: 'warehouse' });
-      for (const pickup of warehouseRequests) {
-        pickup.status = 'recycled';
-        if (pickup.pointsAwarded === 0) {
-          const pts = Math.round(pickup.weight * 10);
-          pickup.pointsAwarded = pts;
+    }
 
-          const u = await User.findById(pickup.user);
+    // Fallback: update any remaining requests currently in status 'warehouse'
+    const warehouseRequests = await PickupRequest.find({ status: 'warehouse' });
+    for (const pickup of warehouseRequests) {
+      pickup.status = 'recycled';
+      if (pickup.pointsAwarded === 0) {
+        const pts = Math.round((pickup.weight || 0) * 10);
+        pickup.pointsAwarded = pts;
+
+        if (pickup.user) {
+          let u = null;
+          if (global.dbMode === 'json' || mongoose.Types.ObjectId.isValid(pickup.user)) {
+            u = await User.findById(pickup.user);
+          }
+          if (!u) {
+            u = await User.findOne({ _id: pickup.user });
+          }
           if (u) {
             u.ecoPoints = (u.ecoPoints || 0) + pts;
             await u.save();
           }
         }
-        await pickup.save();
       }
+      await pickup.save();
     }
 
     res.json({ msg: `Batch ${batch.batchCode} successfully dispatched to ${batch.recyclingCentre} for recycling!`, batch });
   } catch (err) {
-    console.error('Dispatch warehouse batch error:', err.message);
-    res.status(500).send('Server error');
+    console.error('Dispatch warehouse batch error:', err);
+    res.status(500).json({ msg: err.message || 'Server error during dispatch' });
   }
 });
 

@@ -23,6 +23,12 @@ const Register = ({ setUser }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!formData.phone || !/^\d{10}$/.test(formData.phone.trim())) {
+      setError('Please enter a valid 10-digit phone number.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -121,9 +127,10 @@ const Register = ({ setUser }) => {
                 type="text"
                 name="phone"
                 className="form-input"
-                placeholder="+91 98765 43210"
+                placeholder="10-digit mobile number (e.g. 9876543210)"
                 value={formData.phone}
                 onChange={handleChange}
+                required
               />
             </div>
 

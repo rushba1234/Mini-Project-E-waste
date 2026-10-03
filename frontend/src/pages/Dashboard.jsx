@@ -76,6 +76,16 @@ const Dashboard = ({ user, setUser }) => {
       const res = await API.put('/auth/profile', profileData);
       setUser(res.data);
       localStorage.setItem('user', JSON.stringify(res.data));
+      setProfileData({
+        name: res.data.name || '',
+        phone: res.data.phone || '',
+        address: res.data.address || ''
+      });
+      setFormData(prev => ({
+        ...prev,
+        address: res.data.address || prev.address || '',
+        userPhone: res.data.phone || prev.userPhone || ''
+      }));
       setShowProfileModal(false);
       alert('Profile updated successfully!');
     } catch (err) {
@@ -85,8 +95,33 @@ const Dashboard = ({ user, setUser }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitting(true);
     setMsg({ type: '', text: '' });
+
+    // Validate phone number
+    const cleanPhone = (formData.userPhone || '').trim().replace(/[\s\-\(\)]/g, '');
+    if (!cleanPhone || !/^\+?[0-9]{10,15}$/.test(cleanPhone)) {
+      setMsg({ type: 'error', text: 'Please enter a valid contact phone number (10 to 15 digits).' });
+      return;
+    }
+
+    // Validate pickup date (cannot be in the past)
+    const selectedDate = new Date(formData.pickupDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (!formData.pickupDate || isNaN(selectedDate.getTime())) {
+      setMsg({ type: 'error', text: 'Please select a valid pickup date.' });
+      return;
+    }
+
+    const checkDate = new Date(selectedDate);
+    checkDate.setHours(0, 0, 0, 0);
+    if (checkDate < today) {
+      setMsg({ type: 'error', text: 'Pickup date cannot be in the past. Please select today or a future date.' });
+      return;
+    }
+
+    setSubmitting(true);
 
     try {
       const res = await API.post('/pickups', formData);
@@ -362,6 +397,7 @@ const Dashboard = ({ user, setUser }) => {
                     type="date"
                     name="pickupDate"
                     className="form-input"
+                    min={new Date().toISOString().split('T')[0]}
                     value={formData.pickupDate}
                     onChange={handleChange}
                     required

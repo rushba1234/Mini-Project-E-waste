@@ -23,7 +23,7 @@
     "email": "staff@ewaste.com",
     "password": "$2a$10$5N.sW7MBmRDE938a.IR5vuKB590DAjypHp09Ap/iDRv0nhoYtLBEC",
     "role": "staff",
-    "phone": "+91 98765 99999",
+    "phone": "9876599999",
     "ecoPoints": 0,
     "createdAt": "2026-08-12T03:58:21.694Z"
   },
@@ -35,7 +35,7 @@
     "role": "user",
     "phone": "9876543210",
     "address": "abcd",
-    "ecoPoints": 0,
+    "ecoPoints": 40,
     "createdAt": "2026-08-12T04:02:53.950Z"
   },
   {
@@ -68,7 +68,7 @@
     "role": "user",
     "phone": "9999922222",
     "address": "xyz street",
-    "ecoPoints": 0,
+    "ecoPoints": 60,
     "createdAt": "2026-08-16T04:14:22.873Z"
   },
   {
@@ -79,7 +79,7 @@
     "role": "user",
     "phone": "9876543210",
     "address": "xyz street",
-    "ecoPoints": 0,
+    "ecoPoints": 150,
     "createdAt": "2026-08-18T06:37:18.896Z"
   },
   {
@@ -88,9 +88,9 @@
     "email": "rumi@gmail.com",
     "password": "$2a$10$tZk2STXU2s2wWJKk6LbVCuujviDkQmp8VepxoeLgwX2HNgQ3t4FoC",
     "role": "user",
-    "phone": "91234567890",
+    "phone": "9123456789",
     "address": "abcd",
-    "ecoPoints": 0,
+    "ecoPoints": 60,
     "createdAt": "2026-08-18T10:18:57.217Z"
   },
   {
@@ -103,5 +103,38 @@
     "address": "",
     "ecoPoints": 0,
     "createdAt": "2026-08-18T10:22:46.565Z"
+  },
+  {
+    "_id": "55emlgly1",
+    "name": "roy",
+    "email": "roy@gmail.com",
+    "password": "$2a$10$kqsHIQy8AR2PufE99z2bKukflcXapEeiv0UTjGxiVFvCBa2Tfbtyu",
+    "role": "user",
+    "phone": "9876543211",
+    "address": "abcd road",
+    "ecoPoints": 110,
+    "createdAt": "2026-09-14T08:44:31.529Z"
+  },
+  {
+    "_id": "o7iwac8k7",
+    "name": "annie",
+    "email": "annie@gmail.com",
+    "password": "$2a$10$Mb2e5OY1gep1AU3F/NpwMeZaTo.6QkLYMc5BUX.vnUjPM2f2z4Kpq",
+    "role": "user",
+    "phone": "9999888800",
+    "address": "xyz road",
+    "ecoPoints": 20,
+    "createdAt": "2026-09-14T10:04:34.353Z"
+  },
+  {
+    "_id": "m3pv0900i",
+    "name": "New User",
+    "email": "unique_1790090989283@example.com",
+    "password": "$2a$10$PdJLGZtYEj10uzP1WLuGUOge0L80OxmJk3Zd1t5/aRv5cbLg.dRj2",
+    "role": "user",
+    "phone": "9988776655",
+    "address": "",
+    "ecoPoints": 0,
+    "createdAt": "2026-09-22T15:29:49.776Z"
   }
 ]

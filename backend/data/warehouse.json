@@ -10,7 +10,48 @@
       "lyabj013r",
       "xl2c6kbsa"
     ],
-    "status": "stored",
-    "createdAt": "2026-08-16T04:09:43.122Z"
+    "status": "recycled",
+    "createdAt": "2026-08-16T04:09:43.122Z",
+    "recyclingCentre": "GreenTech Recycling Hub",
+    "recycledAt": "2026-09-14T08:42:34.861Z"
+  },
+  {
+    "_id": "pj44krenx",
+    "batchCode": "WH-BATCH-1279",
+    "itemCount": 1,
+    "totalWeight": 6,
+    "requestIds": [
+      "tz9dld55g"
+    ],
+    "status": "recycled",
+    "createdAt": "2026-09-14T08:49:01.223Z",
+    "recyclingCentre": "GreenTech Recycling Hub",
+    "recycledAt": "2026-09-14T08:50:26.663Z"
+  },
+  {
+    "_id": "bxn4sjpin",
+    "batchCode": "WH-BATCH-3152",
+    "itemCount": 1,
+    "totalWeight": 15,
+    "requestIds": [
+      "ywtmoce4e"
+    ],
+    "status": "recycled",
+    "createdAt": "2026-09-14T08:53:17.407Z",
+    "recyclingCentre": "Eco-Cycle E-Waste Point",
+    "recycledAt": "2026-09-14T08:53:53.219Z"
+  },
+  {
+    "_id": "76qbrm2wc",
+    "batchCode": "WH-BATCH-7517",
+    "itemCount": 1,
+    "totalWeight": 2,
+    "requestIds": [
+      "c40wabfgx"
+    ],
+    "status": "recycled",
+    "createdAt": "2026-09-14T10:21:46.958Z",
+    "recyclingCentre": "Global Electronic Waste Depot",
+    "recycledAt": "2026-09-14T10:28:55.419Z"
   }
 ]

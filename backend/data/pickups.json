@@ -9,8 +9,8 @@
     "weight": 4,
     "address": "abcd",
     "pickupDate": "2026-08-12",
-    "status": "pending",
-    "pointsAwarded": 0,
+    "status": "recycled",
+    "pointsAwarded": 40,
     "createdAt": "2026-08-16T04:02:15.946Z"
   },
   {
@@ -23,8 +23,8 @@
     "weight": 6,
     "address": "xyz street",
     "pickupDate": "2026-08-16",
-    "status": "pending",
-    "pointsAwarded": 0,
+    "status": "recycled",
+    "pointsAwarded": 60,
     "createdAt": "2026-08-16T04:15:14.725Z"
   },
   {
@@ -37,8 +37,8 @@
     "weight": 6,
     "address": "abcd",
     "pickupDate": "2026-08-18",
-    "status": "pending",
-    "pointsAwarded": 0,
+    "status": "recycled",
+    "pointsAwarded": 60,
     "createdAt": "2026-08-18T10:21:33.190Z"
   },
   {
@@ -51,8 +51,64 @@
     "weight": 15,
     "address": "xyz street",
     "pickupDate": "2026-08-06",
-    "status": "pending",
-    "pointsAwarded": 0,
+    "status": "recycled",
+    "pointsAwarded": 150,
     "createdAt": "2026-08-18T14:44:03.933Z"
+  },
+  {
+    "_id": "ywtmoce4e",
+    "user": "55emlgly1",
+    "userName": "roy",
+    "userPhone": "9876543211",
+    "category": "Chargers",
+    "description": "damaged",
+    "weight": 15,
+    "address": "abcd road",
+    "pickupDate": "2026-09-18",
+    "status": "recycled",
+    "pointsAwarded": 150,
+    "createdAt": "2026-09-14T08:45:31.925Z",
+    "assignedStaff": "rziui6djm",
+    "assignedStaffName": "Rahul",
+    "warehouseBatchId": "WH-BATCH-3152"
+  },
+  {
+    "_id": "tz9dld55g",
+    "user": "55emlgly1",
+    "userName": "roy",
+    "userPhone": "9876543211",
+    "category": "Appliances",
+    "description": "complaint",
+    "weight": 6,
+    "address": "abcd road",
+    "pickupDate": "2026-09-02",
+    "status": "recycled",
+    "pointsAwarded": 60,
+    "createdAt": "2026-09-14T08:46:39.036Z",
+    "assignedStaff": "rziui6djm",
+    "assignedStaffName": "Rahul",
+    "warehouseBatchId": "WH-BATCH-1279",
+    "feedback": {
+      "rating": 5,
+      "comment": "good",
+      "date": "2026-09-14T08:51:24.233Z"
+    }
+  },
+  {
+    "_id": "c40wabfgx",
+    "user": "o7iwac8k7",
+    "userName": "annie",
+    "userPhone": "9999888800",
+    "category": "Chargers",
+    "description": "damaged",
+    "weight": 2,
+    "address": "xyz road",
+    "pickupDate": "2026-09-24",
+    "status": "recycled",
+    "pointsAwarded": 20,
+    "createdAt": "2026-09-14T10:18:30.101Z",
+    "assignedStaff": "rziui6djm",
+    "assignedStaffName": "Rahul",
+    "warehouseBatchId": "WH-BATCH-7517"
   }
 ]

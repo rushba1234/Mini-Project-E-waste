@@ -70,21 +70,21 @@ async function seedInitialSetup() {
           name: 'GreenTech Recycling Hub',
           address: 'Building 12, Tech Park Avenue, Kakkanad, Kochi',
           operatingHours: 'Mon - Sat: 9:00 AM - 6:00 PM',
-          phone: '+91 98765 43210',
+          phone: '9876543210',
           coordinates: { lat: 10.0159, lng: 76.3419 }
         },
         {
           name: 'Eco-Cycle E-Waste Point',
           address: 'MG Road, Near Metro Station, Ernakulam',
           operatingHours: 'Mon - Fri: 10:00 AM - 7:00 PM',
-          phone: '+91 98765 43211',
+          phone: '9876543211',
           coordinates: { lat: 9.9763, lng: 76.2798 }
         },
         {
           name: 'Global Electronic Waste Depot',
           address: 'Industrial Area, Phase II, Kalamassery',
           operatingHours: 'Mon - Sat: 8:00 AM - 5:00 PM',
-          phone: '+91 98765 43212',
+          phone: '9876543212',
           coordinates: { lat: 10.0543, lng: 76.3218 }
         }
       ];
@@ -104,7 +104,7 @@ async function seedInitialSetup() {
         email: 'admin@ewaste.com',
         password: hashedPassword,
         role: 'admin',
-        phone: '+91 98765 00000',
+        phone: '9876500000',
         ecoPoints: 0
       });
       console.log('System Admin account created (admin@ewaste.com / admin123)');
@@ -120,7 +120,7 @@ async function seedInitialSetup() {
         email: 'staff@ewaste.com',
         password: hashedPassword,
         role: 'staff',
-        phone: '+91 98765 99999',
+        phone: '9876599999',
         ecoPoints: 0
       });
       console.log('Default Staff account created (staff@ewaste.com / staff123)');
