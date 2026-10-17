@@ -32,7 +32,10 @@ const Register = ({ setUser }) => {
     setLoading(true);
 
     try {
-      const res = await API.post('/auth/register', formData);
+      const res = await API.post('/auth/register', {
+        ...formData,
+        phone: formData.phone.trim()
+      });
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
       setUser(res.data.user);

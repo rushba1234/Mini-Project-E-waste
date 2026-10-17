@@ -27,7 +27,9 @@ router.post('/register', async (req, res) => {
     if (!phone || !isValidPhone(phone)) {
       return res.status(400).json({ msg: 'Please enter a valid 10-digit phone number.' });
     }
-    const existingPhone = await User.findOne({ phone: phone.trim() });
+    const cleanPhone = phone.trim();
+    const allUsers = await User.find({});
+    const existingPhone = (await User.findOne({ phone: cleanPhone })) || allUsers.find(u => u.phone && u.phone.trim() === cleanPhone);
     if (existingPhone) {
       return res.status(400).json({ msg: 'Phone number already exists.' });
     }
@@ -40,7 +42,7 @@ router.post('/register', async (req, res) => {
       email,
       password: hashedPassword,
       role: role || 'user',
-      phone: phone || '',
+      phone: cleanPhone,
       address: address || '',
       ecoPoints: 0
     });
@@ -241,7 +243,9 @@ router.post('/staff', auth, async (req, res) => {
     if (!phone || !isValidPhone(phone)) {
       return res.status(400).json({ msg: 'Please enter a valid 10-digit phone number.' });
     }
-    const existingPhone = await User.findOne({ phone: phone.trim() });
+    const cleanPhone = phone.trim();
+    const allUsers = await User.find({});
+    const existingPhone = (await User.findOne({ phone: cleanPhone })) || allUsers.find(u => u.phone && u.phone.trim() === cleanPhone);
     if (existingPhone) {
       return res.status(400).json({ msg: 'Phone number already exists.' });
     }
@@ -254,7 +258,7 @@ router.post('/staff', auth, async (req, res) => {
       email,
       password: hashedPassword,
       role: 'staff',
-      phone: phone || '',
+      phone: cleanPhone,
       address: address || '',
       ecoPoints: 0
     });

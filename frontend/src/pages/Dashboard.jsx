@@ -20,6 +20,7 @@ const Dashboard = ({ user, setUser }) => {
     rating: 5,
     comment: ''
   });
+  const [hoverRating, setHoverRating] = useState(0);
 
   const [formData, setFormData] = useState({
     category: 'Mobile Phones',
@@ -152,6 +153,7 @@ const Dashboard = ({ user, setUser }) => {
       });
       setRequests(requests.map(r => r._id === feedbackData.requestId ? res.data : r));
       setFeedbackData({ requestId: null, rating: 5, comment: '' });
+      setHoverRating(0);
       alert('Thank you for providing your feedback!');
     } catch (err) {
       alert(err.response?.data?.msg || 'Failed to submit feedback');
@@ -497,17 +499,26 @@ const Dashboard = ({ user, setUser }) => {
                         </div>
 
                         {/* Feedback Section */}
+                        {/* Feedback Section */}
                         {req.feedback && req.feedback.rating > 0 ? (
-                          <div style={{ fontSize: '0.8rem', color: '#34d399', background: 'rgba(16, 185, 129, 0.1)', padding: '0.5rem', borderRadius: '6px' }}>
-                            ⭐ Feedback: {req.feedback.rating}/5 — "{req.feedback.comment}"
+                          <div style={{ fontSize: '0.85rem', color: '#34d399', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.25)', padding: '0.6rem 0.85rem', borderRadius: '8px', marginTop: '0.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <span style={{ color: '#fbbf24' }}>{'⭐'.repeat(req.feedback.rating || 5)}</span>
+                              <strong>{req.feedback.rating}/5 Feedback Submitted</strong>
+                            </div>
+                            {req.feedback.comment && (
+                              <div style={{ color: '#e2e8f0', marginTop: '0.35rem', fontStyle: 'italic' }}>
+                                "{req.feedback.comment}"
+                              </div>
+                            )}
                           </div>
                         ) : (req.status === 'collected' || req.status === 'warehouse' || req.status === 'recycled') ? (
                           <button
                             onClick={() => setFeedbackData({ requestId: req._id, rating: 5, comment: '' })}
                             className="btn-secondary"
-                            style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', alignSelf: 'flex-start' }}
+                            style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', alignSelf: 'flex-start', marginTop: '0.5rem', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.4)' }}
                           >
-                            💬 Provide Feedback
+                            💬 Provide 1–5 Star Feedback
                           </button>
                         ) : null}
                       </div>
@@ -520,35 +531,48 @@ const Dashboard = ({ user, setUser }) => {
             {/* Submit Feedback Modal/Card */}
             {feedbackData.requestId && (
               <GlassCard style={{ border: '1px solid #34d399' }}>
-                <h4 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>💬 Provide Service Feedback</h4>
+                <h4 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: '#34d399' }}>💬 Provide Service Feedback</h4>
                 <form onSubmit={handleFeedbackSubmit}>
                   <div className="form-group">
                     <label className="form-label">Rating (1 to 5 Stars)</label>
-                    <select
-                      className="form-select"
-                      value={feedbackData.rating}
-                      onChange={(e) => setFeedbackData({ ...feedbackData, rating: Number(e.target.value) })}
-                    >
-                      <option value="5">⭐⭐⭐⭐⭐ (5 - Excellent)</option>
-                      <option value="4">⭐⭐⭐⭐ (4 - Very Good)</option>
-                      <option value="3">⭐⭐⭐ (3 - Average)</option>
-                      <option value="2">⭐⭐ (2 - Poor)</option>
-                      <option value="1">⭐ (1 - Terrible)</option>
-                    </select>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', margin: '0.35rem 0 0.75rem' }}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setFeedbackData({ ...feedbackData, rating: star })}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            fontSize: '1.8rem',
+                            color: star <= feedbackData.rating ? '#fbbf24' : 'rgba(255,255,255,0.2)',
+                            cursor: 'pointer',
+                            padding: '0 0.1rem',
+                            transition: 'all 0.15s ease'
+                          }}
+                          title={`${star} Star${star > 1 ? 's' : ''}`}
+                        >
+                          ★
+                        </button>
+                      ))}
+                      <span style={{ fontSize: '0.9rem', fontWeight: '600', color: '#fbbf24', marginLeft: '0.5rem' }}>
+                        {feedbackData.rating} / 5 Stars
+                      </span>
+                    </div>
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Comments</label>
+                    <label className="form-label">Comments / Remarks</label>
                     <input
                       type="text"
                       className="form-input"
-                      placeholder="Prompt collection, staff behaviour, etc."
+                      placeholder="Prompt collection, polite staff behaviour, etc."
                       value={feedbackData.comment}
                       onChange={(e) => setFeedbackData({ ...feedbackData, comment: e.target.value })}
                       required
                     />
                   </div>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button type="submit" className="btn-primary" style={{ padding: '0.4rem 1rem' }}>Submit Feedback</button>
+                    <button type="submit" className="btn-primary" style={{ padding: '0.45rem 1.25rem' }}>Submit Feedback</button>
                     <button type="button" className="btn-secondary" onClick={() => setFeedbackData({ requestId: null, rating: 5, comment: '' })}>Cancel</button>
                   </div>
                 </form>

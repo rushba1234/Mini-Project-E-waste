@@ -3,6 +3,8 @@ import API from '../utils/api';
 import GlassCard from '../components/GlassCard';
 import EwasteChart from '../components/EwasteChart';
 
+const STATUS_ORDER = ['pending', 'verified', 'assigned', 'collected', 'warehouse', 'recycled'];
+
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('requests'); // 'requests' | 'users' | 'staff' | 'warehouse' | 'recycling'
   const [requests, setRequests] = useState([]);
@@ -49,6 +51,11 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchData();
+    // Auto-sync status updates between Staff and Admin consoles every 5 seconds
+    const interval = setInterval(() => {
+      fetchData();
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleVerifyRequest = async (id) => {
@@ -124,11 +131,29 @@ const AdminDashboard = () => {
   };
 
   const handleStatusChange = async (requestId, newStatus) => {
+    const targetReq = requests.find(r => r._id === requestId);
+    if (!targetReq) return;
+
+    const currentIdx = STATUS_ORDER.indexOf(targetReq.status || 'pending');
+    const newIdx = STATUS_ORDER.indexOf(newStatus);
+
+    if (newIdx <= currentIdx) {
+      setUpdateMsg('❌ Status cannot be reverted to a previous or completed step.');
+      setTimeout(() => setUpdateMsg(''), 4000);
+      return;
+    }
+
+    if (newIdx !== currentIdx + 1) {
+      setUpdateMsg(`❌ Status must follow strict sequential order. Next required step is "${STATUS_ORDER[currentIdx + 1]}".`);
+      setTimeout(() => setUpdateMsg(''), 4000);
+      return;
+    }
+
     try {
       setUpdateMsg('Updating status...');
       const res = await API.put(`/pickups/${requestId}/status`, { status: newStatus });
       setRequests(requests.map(r => r._id === requestId ? res.data : r));
-      setUpdateMsg(`Status updated to "${newStatus}"! Points awarded if recycled.`);
+      setUpdateMsg(`✅ Status updated to "${newStatus}"! ${newStatus === 'recycled' ? 'Points awarded.' : ''}`);
       setTimeout(() => setUpdateMsg(''), 4000);
     } catch (err) {
       setUpdateMsg(err.response?.data?.msg || 'Failed to update status');
@@ -320,6 +345,26 @@ const AdminDashboard = () => {
                         📍 <strong>Address:</strong> {req.address}
                       </div>
 
+                      {/* Display user feedback if available */}
+                      {req.feedback && (req.feedback.rating > 0 || req.feedback.comment) && (
+                        <div style={{
+                          fontSize: '0.8rem',
+                          background: 'rgba(251, 191, 36, 0.1)',
+                          border: '1px solid rgba(251, 191, 36, 0.3)',
+                          color: '#fbbf24',
+                          padding: '0.45rem 0.75rem',
+                          borderRadius: '6px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '0.5rem',
+                          flexWrap: 'wrap'
+                        }}>
+                          <span>💬 <strong>User Feedback:</strong> "{req.feedback.comment || 'No comment provided'}"</span>
+                          <span>{'⭐'.repeat(req.feedback.rating || 5)} ({req.feedback.rating || 5}/5 Stars)</span>
+                        </div>
+                      )}
+
                       {/* Admin Workflow Actions: Verify & Assign Staff */}
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.25rem', borderTop: '1px dashed var(--border-glass)', paddingTop: '0.5rem' }}>
                         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
@@ -352,14 +397,15 @@ const AdminDashboard = () => {
                           ) : (
                             <select
                               className="form-select"
-                              style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', width: 'auto' }}
+                              style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', width: 'auto', opacity: req.status === 'pending' ? 0.5 : 1 }}
                               value={req.assignedStaff || ''}
+                              disabled={req.status === 'pending'}
                               onChange={(e) => {
                                 const selected = staff.find(s => String(s._id) === String(e.target.value));
                                 handleAssignStaff(req._id, e.target.value, selected ? selected.name : 'Staff');
                               }}
                             >
-                              <option value="">-- Assign Staff --</option>
+                              <option value="">{req.status === 'pending' ? '-- Verify First to Assign --' : '-- Assign Staff --'}</option>
                               {staff.map(s => (
                                 <option key={s._id} value={s._id}>
                                   {s.name || 'Staff Member'} ({s.email || 'No email'})
@@ -369,29 +415,88 @@ const AdminDashboard = () => {
                           )}
                         </div>
 
-                        {/* Status update buttons */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Update Status:</span>
-                          {['pending', 'verified', 'assigned', 'collected', 'warehouse', 'recycled'].map(st => (
-                            <button
-                              key={st}
-                              disabled={req.status === st}
-                              onClick={() => handleStatusChange(req._id, st)}
-                              style={{
-                                background: req.status === st ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)',
-                                border: req.status === st ? '1px solid var(--primary)' : '1px solid var(--border-glass)',
-                                color: req.status === st ? '#fff' : 'var(--text-muted)',
-                                opacity: req.status === st ? 0.6 : 1,
-                                padding: '0.3rem 0.6rem',
-                                borderRadius: '6px',
-                                fontSize: '0.75rem',
-                                cursor: req.status === st ? 'default' : 'pointer',
-                                textTransform: 'capitalize'
-                              }}
-                            >
-                              {st}
-                            </button>
-                          ))}
+                        {/* Status update buttons - Strict Sequential Workflow */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontWeight: '600', marginRight: '0.2rem' }}>
+                            Sequential Flow:
+                          </span>
+                          {STATUS_ORDER.map((st, idx) => {
+                            const currentIdx = STATUS_ORDER.indexOf(req.status || 'pending');
+                            const isCompleted = idx < currentIdx;
+                            const isCurrent = idx === currentIdx;
+                            const isNext = idx === currentIdx + 1;
+                            const isStaffStep = st === 'collected' || st === 'warehouse';
+
+                            // Admin CANNOT update staff-only steps (collected & warehouse).
+                            // Admin can only update non-staff steps when they are next in sequence.
+                            const isDisabled = isCompleted || isCurrent || !isNext || isStaffStep;
+
+                            let btnBg = 'rgba(255,255,255,0.02)';
+                            let btnBorder = '1px solid rgba(255,255,255,0.06)';
+                            let btnColor = 'rgba(255,255,255,0.25)';
+                            let btnCursor = 'not-allowed';
+                            let label = st;
+
+                            if (isCompleted) {
+                              btnBg = 'rgba(16, 185, 129, 0.1)';
+                              btnBorder = '1px solid rgba(16, 185, 129, 0.3)';
+                              btnColor = '#10b981';
+                              btnCursor = 'not-allowed';
+                              label = `✓ ${st}`;
+                            } else if (isCurrent) {
+                              btnBg = 'rgba(56, 189, 248, 0.15)';
+                              btnBorder = '1px solid #38bdf8';
+                              btnColor = '#38bdf8';
+                              btnCursor = 'default';
+                              label = `● ${st}`;
+                            } else if (isNext) {
+                              if (isStaffStep) {
+                                // Staff-only step awaiting Staff action
+                                btnBg = 'rgba(251, 191, 36, 0.1)';
+                                btnBorder = '1px solid rgba(251, 191, 36, 0.4)';
+                                btnColor = '#fbbf24';
+                                btnCursor = 'not-allowed';
+                                label = `⏳ ${st} (Staff Action)`;
+                              } else {
+                                // Admin step ready to advance
+                                btnBg = 'linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(6, 182, 212, 0.25) 100%)';
+                                btnBorder = '1px solid #10b981';
+                                btnColor = '#34d399';
+                                btnCursor = 'pointer';
+                                label = `➔ ${st}`;
+                              }
+                            }
+
+                            return (
+                              <button
+                                key={st}
+                                disabled={isDisabled}
+                                onClick={() => handleStatusChange(req._id, st)}
+                                title={
+                                  isCompleted ? `Step completed (✓ ${st}) - View only` :
+                                  isCurrent ? `Current active status (${st})` :
+                                  isNext ? (isStaffStep ? `Only assigned Staff can update status to "${st}". Admin views completed status once updated by Staff.` : `Click to advance status to next step: "${st}"`) :
+                                  'Strict sequential order: complete previous steps first'
+                                }
+                                style={{
+                                  background: btnBg,
+                                  border: btnBorder,
+                                  color: btnColor,
+                                  opacity: isDisabled ? (isCompleted ? 0.9 : 0.6) : 1,
+                                  padding: '0.3rem 0.65rem',
+                                  borderRadius: '6px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: isNext || isCurrent || isCompleted ? '600' : '400',
+                                  cursor: btnCursor,
+                                  textTransform: 'capitalize',
+                                  transition: 'all 0.2s ease',
+                                  boxShadow: isNext && !isStaffStep ? '0 0 8px rgba(16, 185, 129, 0.25)' : 'none'
+                                }}
+                              >
+                                {label}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
@@ -684,7 +789,7 @@ const AdminDashboard = () => {
             <div style={{ marginBottom: '1.5rem' }}>
               <h3 style={{ fontSize: '1.3rem', marginBottom: '0.25rem', color: '#38bdf8' }}>💬 User Feedback Log</h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                View ratings and comments submitted by users for completed e-waste pickups.
+                View 1–5 star ratings and comments submitted by users for completed e-waste pickups.
               </p>
             </div>
 
@@ -708,38 +813,62 @@ const AdminDashboard = () => {
                 );
               }
 
+              const avgRating = (allFeedback.reduce((acc, f) => acc + (f.rating || 5), 0) / allFeedback.length).toFixed(1);
+
               return (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.25rem' }}>
-                  {allFeedback.map((fb, idx) => (
-                    <div
-                      key={fb.requestId || idx}
-                      style={{
-                        background: 'rgba(255, 255, 255, 0.02)',
-                        border: '1px solid var(--border-glass)',
-                        borderRadius: '12px',
-                        padding: '1.25rem',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.65rem'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <strong style={{ fontSize: '1.05rem', color: '#fff' }}>👤 {fb.userName}</strong>
-                        <span style={{ fontSize: '0.9rem', color: '#fbbf24' }}>
-                          {'⭐'.repeat(fb.rating || 5)} ({fb.rating || 5}/5)
-                        </span>
-                      </div>
-
-                      <div style={{ fontSize: '0.9rem', color: '#e2e8f0', background: 'rgba(0,0,0,0.25)', padding: '0.75rem', borderRadius: '8px', borderLeft: '3px solid #38bdf8' }}>
-                        "{fb.message || fb.comment || 'No comment provided'}"
-                      </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '0.25rem' }}>
-                        <span>📦 Item: <strong>{fb.category || 'E-Waste'}</strong></span>
-                        <span>📅 Date: {fb.date ? new Date(fb.date).toLocaleDateString() : 'Recent'}</span>
+                <div>
+                  {/* Summary Bar */}
+                  <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                    <div style={{ background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.3)', padding: '0.75rem 1.25rem', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <span style={{ fontSize: '1.5rem' }}>💬</span>
+                      <div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Total Feedbacks</div>
+                        <div style={{ fontSize: '1.3rem', fontWeight: '800', color: '#38bdf8' }}>{allFeedback.length}</div>
                       </div>
                     </div>
-                  ))}
+
+                    <div style={{ background: 'rgba(251, 191, 36, 0.1)', border: '1px solid rgba(251, 191, 36, 0.3)', padding: '0.75rem 1.25rem', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <span style={{ fontSize: '1.5rem' }}>⭐</span>
+                      <div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Average User Rating</div>
+                        <div style={{ fontSize: '1.3rem', fontWeight: '800', color: '#fbbf24' }}>{avgRating} / 5.0</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Feedback Cards */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.25rem' }}>
+                    {allFeedback.map((fb, idx) => (
+                      <div
+                        key={fb.requestId || idx}
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.02)',
+                          border: '1px solid var(--border-glass)',
+                          borderRadius: '12px',
+                          padding: '1.25rem',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.65rem'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <strong style={{ fontSize: '1.05rem', color: '#fff' }}>👤 {fb.userName}</strong>
+                          <span style={{ fontSize: '0.9rem', color: '#fbbf24', fontWeight: '700' }}>
+                            {'⭐'.repeat(fb.rating || 5)} ({fb.rating || 5}/5)
+                          </span>
+                        </div>
+
+                        <div style={{ fontSize: '0.9rem', color: '#e2e8f0', background: 'rgba(0,0,0,0.25)', padding: '0.75rem', borderRadius: '8px', borderLeft: '3px solid #34d399', fontStyle: 'italic' }}>
+                          "{fb.message || fb.comment || 'No comment provided'}"
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '0.25rem' }}>
+                          <span>📦 Category: <strong>{fb.category || 'E-Waste'}</strong></span>
+                          <span>📅 Date: {fb.date ? new Date(fb.date).toLocaleDateString() : 'Recent'}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               );
             })()}

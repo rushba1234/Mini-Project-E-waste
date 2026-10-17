@@ -121,6 +121,8 @@ router.get('/feedback', auth, async (req, res) => {
   }
 });
 
+const STATUS_ORDER = ['pending', 'verified', 'assigned', 'collected', 'warehouse', 'recycled'];
+
 // @route   PUT api/pickups/:id/verify
 // @desc    Verify pickup request (Admin only)
 // @access  Private
@@ -132,6 +134,10 @@ router.put('/:id/verify', auth, async (req, res) => {
     let pickup = await PickupRequest.findById(req.params.id);
     if (!pickup) return res.status(404).json({ msg: 'Pickup request not found' });
     
+    if (pickup.status !== 'pending') {
+      return res.status(400).json({ msg: 'Request has already been verified or is past verification stage.' });
+    }
+
     pickup.status = 'verified';
     await pickup.save();
     res.json(pickup);
@@ -159,6 +165,10 @@ router.put('/:id/assign', auth, async (req, res) => {
       return res.status(400).json({ msg: 'Staff member has already been assigned and cannot be reassigned.' });
     }
 
+    if (pickup.status === 'pending') {
+      return res.status(400).json({ msg: 'Request must be verified before staff can be assigned.' });
+    }
+
     let staffUser = null;
     if (staffId) {
       staffUser = await User.findById(staffId);
@@ -177,16 +187,24 @@ router.put('/:id/assign', auth, async (req, res) => {
 });
 
 // @route   PUT api/pickups/:id/collect
-// @desc    Collect e-waste from user (Staff or Admin)
+// @desc    Collect e-waste from user (Staff ONLY)
 // @access  Private
 router.put('/:id/collect', auth, async (req, res) => {
-  if (req.user.role !== 'staff' && req.user.role !== 'admin') {
-    return res.status(403).json({ msg: 'Staff or Admin role required.' });
+  if (req.user.role !== 'staff') {
+    return res.status(403).json({ msg: 'Authorization denied. Only assigned Staff can mark items as collected.' });
   }
 
   try {
     let pickup = await PickupRequest.findById(req.params.id);
     if (!pickup) return res.status(404).json({ msg: 'Pickup request not found' });
+
+    const currentIdx = STATUS_ORDER.indexOf(pickup.status || 'pending');
+    if (currentIdx < STATUS_ORDER.indexOf('assigned')) {
+      return res.status(400).json({ msg: 'Request must be assigned before collection.' });
+    }
+    if (currentIdx >= STATUS_ORDER.indexOf('collected')) {
+      return res.status(400).json({ msg: 'Request is already collected or past collection stage.' });
+    }
 
     pickup.status = 'collected';
     await pickup.save();
@@ -198,16 +216,24 @@ router.put('/:id/collect', auth, async (req, res) => {
 });
 
 // @route   PUT api/pickups/:id/warehouse
-// @desc    Transport collected e-waste to temporary warehouse (Staff or Admin)
+// @desc    Transport collected e-waste to temporary warehouse (Staff ONLY)
 // @access  Private
 router.put('/:id/warehouse', auth, async (req, res) => {
-  if (req.user.role !== 'staff' && req.user.role !== 'admin') {
-    return res.status(403).json({ msg: 'Staff or Admin role required.' });
+  if (req.user.role !== 'staff') {
+    return res.status(403).json({ msg: 'Authorization denied. Only assigned Staff can transport e-waste to warehouse.' });
   }
 
   try {
     let pickup = await PickupRequest.findById(req.params.id);
     if (!pickup) return res.status(404).json({ msg: 'Pickup request not found' });
+
+    const currentIdx = STATUS_ORDER.indexOf(pickup.status || 'pending');
+    if (currentIdx < STATUS_ORDER.indexOf('collected')) {
+      return res.status(400).json({ msg: 'Request must be collected before transporting to warehouse.' });
+    }
+    if (currentIdx >= STATUS_ORDER.indexOf('warehouse')) {
+      return res.status(400).json({ msg: 'Request is already in warehouse or recycled.' });
+    }
 
     pickup.status = 'warehouse';
     await pickup.save();
@@ -252,8 +278,15 @@ router.post('/:id/feedback', auth, async (req, res) => {
     let pickup = await PickupRequest.findById(req.params.id);
     if (!pickup) return res.status(404).json({ msg: 'Pickup request not found' });
 
+    // Ownership check
+    if (String(pickup.user) !== String(req.user.id) && req.user.role !== 'admin') {
+      return res.status(403).json({ msg: 'Authorization denied. You can only provide feedback for your own pickup requests.' });
+    }
+
+    const numericRating = Math.min(5, Math.max(1, Number(rating) || 5));
+
     pickup.feedback = {
-      rating: Number(rating) || 5,
+      rating: numericRating,
       comment: comment || '',
       date: new Date()
     };
@@ -278,11 +311,33 @@ router.put('/:id/status', auth, async (req, res) => {
       return res.status(404).json({ msg: 'Pickup request not found' });
     }
 
-    const oldStatus = pickup.status;
+    const oldStatus = pickup.status || 'pending';
+    const oldIdx = STATUS_ORDER.indexOf(oldStatus);
+    const newIdx = STATUS_ORDER.indexOf(status);
+
+    if (newIdx === -1) {
+      return res.status(400).json({ msg: 'Invalid status value' });
+    }
+
+    // Only Staff can update status to 'collected' or 'warehouse'
+    if (req.user.role === 'admin' && (status === 'collected' || status === 'warehouse')) {
+      return res.status(403).json({
+        msg: `Only Staff can update status to "${status}". Admin can only view completed staff statuses.`
+      });
+    }
+
+    if (newIdx <= oldIdx) {
+      return res.status(400).json({ msg: 'Cannot revert status or re-select completed step. Status workflow is strictly sequential.' });
+    }
+
+    if (newIdx !== oldIdx + 1) {
+      return res.status(400).json({ msg: `Status must follow strict sequential order. Next required step is "${STATUS_ORDER[oldIdx + 1]}".` });
+    }
+
     pickup.status = status;
 
     // If changing to 'recycled' and not already awarded points
-    if (status === 'recycled' && oldStatus !== 'recycled' && pickup.pointsAwarded === 0) {
+    if (status === 'recycled' && oldStatus !== 'recycled' && (pickup.pointsAwarded || 0) === 0) {
       const points = Math.round(pickup.weight * 10); // 10 points per kg
       pickup.pointsAwarded = points;
 

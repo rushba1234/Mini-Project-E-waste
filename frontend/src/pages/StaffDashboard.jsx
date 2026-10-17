@@ -21,6 +21,10 @@ const StaffDashboard = ({ user }) => {
 
   useEffect(() => {
     fetchStaffTasks();
+    const interval = setInterval(() => {
+      fetchStaffTasks();
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleMarkCollected = async (id) => {
@@ -200,15 +204,38 @@ const StaffDashboard = ({ user }) => {
 
                   {/* Staff Action Buttons */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
-                    {req.userPhone && (
-                      <a
-                        href={`tel:${req.userPhone}`}
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      {req.userPhone ? (
+                        <a
+                          href={`tel:${req.userPhone}`}
+                          className="btn-secondary"
+                          style={{ flex: 1, minWidth: '130px', textAlign: 'center', textDecoration: 'none', fontSize: '0.85rem', padding: '0.5rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
+                        >
+                          📞 Contact User ({req.userPhone})
+                        </a>
+                      ) : (
+                        <span
+                          className="btn-secondary"
+                          style={{ flex: 1, minWidth: '130px', textAlign: 'center', fontSize: '0.85rem', padding: '0.5rem', opacity: 0.6, cursor: 'not-allowed', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          📞 Contact User (N/A)
+                        </span>
+                      )}
+                      <button
+                        type="button"
                         className="btn-secondary"
-                        style={{ textAlign: 'center', textDecoration: 'none', fontSize: '0.85rem', padding: '0.5rem' }}
+                        onClick={() => {
+                          if (req.userPhone) {
+                            alert(`Calling ${req.userName || 'User'} at ${req.userPhone}...`);
+                          } else {
+                            alert('No phone number recorded for this user.');
+                          }
+                        }}
+                        style={{ flex: 1, minWidth: '110px', textAlign: 'center', fontSize: '0.85rem', padding: '0.5rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
                       >
-                        📞 Contact User ({req.userPhone})
-                      </a>
-                    )}
+                        📞 Call User
+                      </button>
+                    </div>
 
                     {req.status !== 'collected' && req.status !== 'warehouse' && req.status !== 'recycled' && (
                       <button
